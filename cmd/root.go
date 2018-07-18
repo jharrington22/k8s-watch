@@ -23,7 +23,7 @@ func init() {
 }
 
 var RootCmd = &cobra.Command{
-	Use: "hello",
+	Use: "kwatch",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Printf("Namespace: %s\n", Namespace)
 		fmt.Printf("Label %s:)\n", Label)

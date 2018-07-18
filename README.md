@@ -1,2 +1,2 @@
-# k8s-watch
+# kwatch
 Kubernetes job log watcher
