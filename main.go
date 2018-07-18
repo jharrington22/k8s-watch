@@ -1,12 +1,12 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"log"
 	"os"
 	"path/filepath"
 
+	"github.com/jharrington22/k8s-watch/cmd"
 	"k8s.io/api/batch/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/watch"
@@ -15,15 +15,14 @@ import (
 )
 
 func main() {
-	var ns, label, field string
 	kubeconfig := filepath.Join(
 		os.Getenv("HOME"), ".kube", "config",
 	)
 
-	flag.StringVar(&ns, "namespace", "", "namespace")
-	flag.StringVar(&label, "l", "", "Label Selector")
-	flag.StringVar(&field, "f", "", "Field Selector")
-	flag.Parse()
+	if err := cmd.RootCmd.Execute(); err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 
 	fmt.Println()
 	fmt.Println("Using kubeconfig: ", kubeconfig)
@@ -41,11 +40,11 @@ func main() {
 	api := clientset.BatchV1()
 
 	listOptions := metav1.ListOptions{
-		LabelSelector: label,
-		FieldSelector: field,
+		LabelSelector: cmd.Label,
+		FieldSelector: cmd.Field,
 	}
 
-	jobs, err := api.Jobs(ns).List(listOptions)
+	jobs, err := api.Jobs(cmd.Namespace).List(listOptions)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -53,7 +52,7 @@ func main() {
 	printJobs(jobs)
 	fmt.Println()
 
-	watcher, err := api.Jobs(ns).Watch(listOptions)
+	watcher, err := api.Jobs(cmd.Namespace).Watch(listOptions)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -70,8 +69,8 @@ func main() {
 			fmt.Printf("Job added\n")
 			fmt.Printf(job.ObjectMeta.Name + "\n")
 			fmt.Printf(job.Spec.Template.ObjectMeta.Labels["build"] + "\n")
-            printJobs(jobs)
-            fmt.Printf("added")
+			printJobs(jobs)
+			fmt.Printf("added")
 		case watch.Deleted:
 			fmt.Printf("Job deleted\n")
 		}
