@@ -17,6 +17,7 @@ package cmd
 import (
 	"fmt"
 	"log"
+	"strconv"
 
 	"github.com/spf13/cobra"
 	"k8s.io/api/batch/v1"
@@ -82,6 +83,7 @@ func printJobs(jobs *v1.JobList) {
 	template := "%-32s%-8s\n"
 	fmt.Printf(template, "NAME", "STATUS")
 	for _, job := range jobs.Items {
-		fmt.Printf(template, job.Name, string(job.Status.Active))
+		status := strconv.Itoa(int(job.Status.Active))
+		fmt.Printf(template, job.Name, status)
 	}
 }
