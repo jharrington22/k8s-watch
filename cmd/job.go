@@ -43,7 +43,6 @@ to quickly create a Cobra application.`,
 		if err != nil {
 			log.Fatal(err)
 		}
-		fmt.Println("job called")
 
 		batchAPI := k8sclient.BatchV1()
 
@@ -52,12 +51,38 @@ to quickly create a Cobra application.`,
 			FieldSelector: Field,
 		}
 
+		if jobName != "" {
+			fmt.Printf("Job name: %s\n", jobName)
+		}
+
 		jobs, err := batchAPI.Jobs(Namespace).List(listOptions)
 		if err != nil {
 			log.Fatal(err)
 		}
-
-		printJobs(jobs)
+		if jobName == "" {
+			printJobs(jobs)
+		} else {
+			//fmt.Println("Looking for specific job")
+			for _, ajob := range jobs.Items {
+				fmt.Println(ajob.Name)
+				if ajob.Name == jobName {
+					//fmt.Println("Found specific job")
+					printJob(ajob)
+					//fmt.Printf("%+v\n", ajob)
+					//fmt.Println("")
+					//fmt.Printf("%+v\n", ajob.ObjectMeta)
+					//fmt.Println("")
+					//fmt.Printf("%+v\n", ajob.ObjectMeta.ResourceVersion)
+					//fmt.Println("")
+					//fmt.Printf("%+v\n", ajob.Status.Active)
+					//var objectMeta string
+					//fmt.Println(string(ajob.ObjectMeta))
+					// for _, o := range ajob.ObjectMeta {
+					// 	fmt.Printf("%s\n", o)
+					// }
+				}
+			}
+		}
 	},
 }
 
@@ -73,6 +98,13 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// jobCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+}
+
+func printJob(job v1.Job) {
+	template := "%-32s%-8s\n"
+	status := strconv.Itoa(int(job.Status.Active))
+	fmt.Printf(template, "NAME", "STATUS")
+	fmt.Printf(template, job.Name, status)
 }
 
 func printJobs(jobs *v1.JobList) {
